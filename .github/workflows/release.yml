@@ -1,0 +1,40 @@
+# Builds the installable extension zip and attaches it to a GitHub release
+# whenever a version tag (v1, v2, ...) is pushed.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check syntax
+        run: node --check src/extension.js
+
+      - name: Build extension zip
+        run: |
+          uuid=$(jq -r .uuid src/metadata.json)
+          (cd src && zip -9 "../$uuid.shell-extension.zip" metadata.json extension.js stylesheet.css)
+          unzip -l "$uuid.shell-extension.zip"
+          echo "ZIP=$uuid.shell-extension.zip" >> "$GITHUB_ENV"
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" "$ZIP" --title "$GITHUB_REF_NAME" --generate-notes
+
+      - name: Upload zip as a build artifact
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-zip
+          path: ${{ env.ZIP }}

@@ -1,0 +1,8 @@
+{
+  "uuid": "app-volume-mixer@jire.github.io",
+  "name": "App Volume Mixer",
+  "description": "Per-application volume sliders and mute buttons in Quick Settings. Click the arrow next to the volume slider to expand them.",
+  "shell-version": ["46", "47", "48", "49", "50", "51"],
+  "url": "https://github.com/Jire/app-volume-mixer",
+  "version": 1
+}
