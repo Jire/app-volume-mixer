@@ -1,8 +1,8 @@
 {
   "uuid": "app-volume-mixer@jire.github.io",
   "name": "App Volume Mixer",
-  "description": "Per-application volume sliders and mute buttons in Quick Settings. Click the arrow next to the volume slider to expand them.",
+  "description": "Per-app volume control in Quick Settings.\n\nClick the arrow next to the volume slider and every app that's playing audio gets its own slider and mute button:\n\n* Turn one app down without touching the others\n* Click an app's icon to mute or unmute it\n* Apps with several streams (browser tabs, games) get one row\n* Stays in sync with changes made in the app itself, pavucontrol or Settings\n\nWorks with PipeWire and PulseAudio.",
   "shell-version": ["46", "47", "48", "49", "50", "51"],
   "url": "https://github.com/Jire/app-volume-mixer",
-  "version": 1
+  "version-name": "2"
 }

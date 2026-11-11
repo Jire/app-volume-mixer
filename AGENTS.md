@@ -24,4 +24,4 @@ A GNOME Shell extension (GNOME 46 to 51) that adds per-app volume sliders and mu
 - **Logs:** `journalctl --user -b -g app-volume-mixer`.
 - **Compatibility:** the code runs on GNOME 46 to 51. Keep the existing fallbacks: `St.BoxLayout`'s `orientation` vs `vertical`, and the optional `slider.addMark`/`clearMarks`. Check APIs against GNOME Shell's source for each version in `shell-version` before using anything new.
 - **Cleanup:** `disable()` must undo everything `enable()` did, including restoring the output slider's `_sync`. extensions.gnome.org review requires this.
-- **Releasing:** bump `version` in `src/metadata.json`, commit, then push a tag such as `v2`.
+- **Releasing:** bump `version-name` in `src/metadata.json` (leave out `version`; extensions.gnome.org sets it), commit, then push a tag with the same number, such as `v3`. Then upload the release zip at https://extensions.gnome.org/upload/.
