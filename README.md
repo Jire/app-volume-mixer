@@ -1,11 +1,24 @@
-# App Volume Mixer
+<p align="center">
+  <img src="docs/icon.png" alt="" width="96">
+</p>
 
-[![GitHub stars](https://img.shields.io/github/stars/Jire/app-volume-mixer?style=flat&logo=github)](https://github.com/Jire/app-volume-mixer/stargazers)
-[![Follow @Jire](https://img.shields.io/github/followers/Jire?label=Follow%20%40Jire&style=flat&logo=github)](https://github.com/Jire)
+<h1 align="center">App Volume Mixer</h1>
 
-Per-app volume control for GNOME. Open Quick Settings, click the **›** next to the volume slider, and every app that's playing audio gets its own slider and mute button.
+<p align="center">
+  Per-app volume control for GNOME. Open Quick Settings, click the <b>›</b> next to the volume slider, and every app that's playing audio gets its own slider and mute button.
+</p>
 
-<img src="docs/screenshot.png" alt="Quick Settings with the sound output menu expanded, showing an Applications section with a Spotify volume slider above the list of output devices" width="410">
+<p align="center">
+  <a href="https://extensions.gnome.org/extension/11721/app-volume-mixer/"><img src="https://img.shields.io/badge/GNOME_Extensions-Get_it-4a86cf?style=flat&logo=gnome&logoColor=white" alt="Get it on GNOME Extensions"></a>
+  <a href="https://github.com/Jire/app-volume-mixer/releases/latest"><img src="https://img.shields.io/github/v/release/Jire/app-volume-mixer?style=flat&label=release" alt="Latest release"></a>
+  <a href="https://github.com/Jire/app-volume-mixer/stargazers"><img src="https://img.shields.io/github/stars/Jire/app-volume-mixer?style=flat&logo=github" alt="GitHub stars"></a>
+  <a href="https://github.com/Jire"><img src="https://img.shields.io/github/followers/Jire?label=Follow%20%40Jire&style=flat&logo=github" alt="Follow @Jire"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Jire/app-volume-mixer?style=flat" alt="License: GPL-2.0-or-later"></a>
+</p>
+
+<p align="center">
+  <img src="docs/screenshot.png" alt="Quick Settings with the sound output menu expanded: an Applications section with sliders for Firefox at 45%, Vesktop muted and Spotify at 100%, above the list of output devices" width="420">
+</p>
 
 - **Per-app slider**: turn one app down without touching the others.
 - **One-click mute**: click an app's icon to mute it. Click again to unmute.
@@ -17,15 +30,23 @@ Works with PipeWire and PulseAudio on **GNOME 46 to 51**.
 
 ## Install
 
-You need the GNOME desktop. Copy and paste the command for your system into a terminal, then **log out and back in**.
+You need the GNOME desktop (GNOME 46 or newer).
 
-### Arch, Manjaro, EndeavourOS, CachyOS
+### Easiest: GNOME Extensions
+
+Install it with one click from **[extensions.gnome.org](https://extensions.gnome.org/extension/11721/app-volume-mixer/)**, or search for "App Volume Mixer" in the [Extension Manager](https://flathub.org/apps/com.mattjakeman.ExtensionManager) app. The listing goes live once GNOME's volunteer reviewers approve it.
+
+### From the terminal
+
+Copy and paste the command for your system, then **log out and back in**.
+
+#### Arch, Manjaro, EndeavourOS, CachyOS
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Jire/app-volume-mixer/main/install.sh | bash
 ```
 
-### Ubuntu 24.04+ and Ubuntu-based GNOME distros
+#### Ubuntu 24.04+ and Ubuntu-based GNOME distros
 
 ```bash
 wget -qO- https://raw.githubusercontent.com/Jire/app-volume-mixer/main/install.sh | bash
@@ -33,7 +54,7 @@ wget -qO- https://raw.githubusercontent.com/Jire/app-volume-mixer/main/install.s
 
 (Ubuntu doesn't always ship `curl`, but it always ships `wget`.)
 
-### Fedora Workstation 40+
+#### Fedora Workstation 40+
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Jire/app-volume-mixer/main/install.sh | bash

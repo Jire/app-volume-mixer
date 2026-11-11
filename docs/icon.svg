@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- SPDX-License-Identifier: GPL-2.0-or-later -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#62a0ea"/>
+      <stop offset="1" stop-color="#1c71d8"/>
+    </linearGradient>
+    <linearGradient id="side" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a5fb4"/>
+      <stop offset="1" stop-color="#174d94"/>
+    </linearGradient>
+  </defs>
+  <!-- base with a darker bottom edge, like Adwaita app icons -->
+  <rect x="16" y="24" width="224" height="216" rx="48" fill="url(#side)"/>
+  <rect x="16" y="16" width="224" height="208" rx="48" fill="url(#bg)"/>
+  <!-- fader tracks -->
+  <g stroke-linecap="round" stroke-width="14">
+    <line x1="76"  y1="58" x2="76"  y2="182" stroke="#1a5fb4" stroke-opacity="0.55"/>
+    <line x1="128" y1="58" x2="128" y2="182" stroke="#1a5fb4" stroke-opacity="0.55"/>
+    <line x1="180" y1="58" x2="180" y2="182" stroke="#1a5fb4" stroke-opacity="0.55"/>
+    <!-- filled part below each knob -->
+    <line x1="76"  y1="96"  x2="76"  y2="182" stroke="#ffffff"/>
+    <line x1="128" y1="146" x2="128" y2="182" stroke="#ffffff"/>
+    <line x1="180" y1="78"  x2="180" y2="182" stroke="#ffffff"/>
+  </g>
+  <!-- knobs -->
+  <g fill="#ffffff" stroke="#1a5fb4" stroke-width="5">
+    <circle cx="76"  cy="96"  r="21"/>
+    <circle cx="128" cy="146" r="21"/>
+    <circle cx="180" cy="78"  r="21"/>
+  </g>
+</svg>
