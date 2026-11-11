@@ -115,3 +115,4 @@ else
     info "Done. It's enabled; if you updated an existing install, log out and back in to load the new version."
 fi
 info "Open Quick Settings and click the arrow next to the volume slider."
+info "Enjoying it? Star the repo and follow @Jire for more free tools: https://github.com/$REPO"

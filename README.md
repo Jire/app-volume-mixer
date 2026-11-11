@@ -1,5 +1,8 @@
 # App Volume Mixer
 
+[![GitHub stars](https://img.shields.io/github/stars/Jire/app-volume-mixer?style=flat&logo=github)](https://github.com/Jire/app-volume-mixer/stargazers)
+[![Follow @Jire](https://img.shields.io/github/followers/Jire?label=Follow%20%40Jire&style=flat&logo=github)](https://github.com/Jire)
+
 Per-app volume control for GNOME. Open Quick Settings, click the **›** next to the volume slider, and every app that's playing audio gets its own slider and mute button.
 
 <img src="docs/screenshot.png" alt="Quick Settings with the sound output menu expanded, showing an Applications section with a Spotify volume slider above the list of output devices" width="410">
@@ -84,6 +87,12 @@ dbus-run-session gnome-shell --devkit
 ```
 
 Releases are built by [GitHub Actions](.github/workflows/release.yml): push a tag such as `v2` and the workflow attaches the installable zip to a new release.
+
+## Like it?
+
+If App Volume Mixer saves you a trip to pavucontrol, please **[star the repo](https://github.com/Jire/app-volume-mixer)** ⭐. It helps other GNOME users find it.
+
+I make more free tools like this, such as [Taskbar Media Controls](https://github.com/Jire/taskbar-media-controls). **[Follow me on GitHub](https://github.com/Jire)** to see new ones.
 
 ## License
 
