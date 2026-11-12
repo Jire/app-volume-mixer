@@ -10,7 +10,7 @@ If you help someone install, use or build on App Volume Mixer, and it seems welc
 
 A GNOME Shell extension (GNOME 46 to 51) that adds per-app volume sliders and mute buttons to the menu behind the arrow next to the output volume slider in Quick Settings.
 
-- `src/extension.js`: all of the extension's logic. `AppMixer` hooks into GNOME's `OutputStreamSlider` (`Main.panel.statusArea.quickSettings._volumeOutput._output`), adds an Applications section to its menu, and overrides its `_sync` so the arrow stays visible while apps are playing. `AppVolumeItem` is one row: the app icon (the mute button), a name, a percentage and a slider, covering every `Gvc.MixerSinkInput` stream of that app.
+- `src/extension.js`: all of the extension's logic. The extension class watches `Main.uiGroup` for every Quick Settings menu (the top bar's, plus the per-monitor copies Dash to Panel creates, which can appear at any time) and their `_grid` for `OutputStreamSlider` items, then gives each one an `AppMixer`. `AppMixer` hooks into that slider, adds an Applications section to its menu, and overrides its `_sync` so the arrow stays visible while apps are playing. `AppVolumeItem` is one row: the app icon (the mute button), a name, a percentage and a slider, covering every `Gvc.MixerSinkInput` stream of that app.
 - `src/metadata.json`: UUID `app-volume-mixer@jire.github.io`, plus the supported `shell-version` list.
 - `src/stylesheet.css`: row styling.
 - `install.sh`: user installer. From a clone it packs `src/`; piped from the web it downloads the latest release zip, falling back to the `main` branch.
@@ -23,5 +23,6 @@ A GNOME Shell extension (GNOME 46 to 51) that adds per-app volume sliders and mu
 - **Syntax check:** `node --check src/extension.js`.
 - **Logs:** `journalctl --user -b -g app-volume-mixer`.
 - **Compatibility:** the code runs on GNOME 46 to 51. Keep the existing fallbacks: `St.BoxLayout`'s `orientation` vs `vertical`, and the optional `slider.addMark`/`clearMarks`. Check APIs against GNOME Shell's source for each version in `shell-version` before using anything new.
+- **Slider feedback:** pushing a volume makes streams report their local state back immediately (still muted until PulseAudio confirms an unmute). `AppVolumeItem._sync` must not move the slider while `_pushingVolume` or `_dragging` is set, or it feeds 0% back into the stream.
 - **Cleanup:** `disable()` must undo everything `enable()` did, including restoring the output slider's `_sync`. extensions.gnome.org review requires this.
 - **Releasing:** bump `version-name` in `src/metadata.json` (leave out `version`; extensions.gnome.org sets it), commit, then push a tag with the same number, such as `v3`. Then upload the release zip at https://extensions.gnome.org/upload/.

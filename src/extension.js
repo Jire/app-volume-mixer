@@ -4,7 +4,9 @@
 // App Volume Mixer
 //
 // Adds an "Applications" section to the menu behind the arrow next to the
-// output volume slider in Quick Settings. Each app that is playing audio gets
+// output volume slider in Quick Settings, in every Quick Settings menu (the
+// top bar's, plus the ones Dash to Panel and similar extensions add to other
+// monitors). Each app that is playing audio gets
 // its own row: click the app icon to mute/unmute it, drag the slider to set
 // its volume. Streams from the same app (e.g. several browser tabs) are
 // grouped into one row and adjusted together.
@@ -148,6 +150,13 @@ class AppVolumeItem extends PopupMenu.PopupBaseMenuItem {
         this.slider.x_expand = true;
         this._sliderChangedId = this.slider.connect('notify::value',
             () => this._sliderChanged());
+        this._dragging = false;
+        this._pushingVolume = false;
+        this.slider.connect('drag-begin', () => (this._dragging = true));
+        this.slider.connect('drag-end', () => {
+            this._dragging = false;
+            this._sync();
+        });
         body.add_child(this.slider);
     }
 
@@ -239,9 +248,15 @@ class AppVolumeItem extends PopupMenu.PopupBaseMenuItem {
         const muted = streams.every(s => s.is_muted);
         const level = Math.max(...streams.map(s => s.volume)) / norm;
 
-        this.slider.block_signal_handler(this._sliderChangedId);
-        this.slider.value = muted ? 0 : level;
-        this.slider.unblock_signal_handler(this._sliderChangedId);
+        // Streams report their local state straight back while we push a new
+        // volume, and they still read as muted until PulseAudio confirms an
+        // unmute. Moving the slider then would feed 0% back into the stream,
+        // so leave it alone while the user is changing it.
+        if (!this._pushingVolume && !this._dragging) {
+            this.slider.block_signal_handler(this._sliderChangedId);
+            this.slider.value = muted ? 0 : level;
+            this.slider.unblock_signal_handler(this._sliderChangedId);
+        }
 
         this._percentLabel.text = muted ? 'Muted' : `${Math.round(level * 100)}%`;
         this._muteBadge.visible = muted;
@@ -253,19 +268,24 @@ class AppVolumeItem extends PopupMenu.PopupBaseMenuItem {
 
     _sliderChanged() {
         const volume = Math.round(this.slider.value * this._control.get_vol_max_norm());
-        for (const stream of this._streams.values()) {
-            let changed;
-            if (volume < 1) {
-                changed = stream.set_volume(0);
-                if (!stream.is_muted)
-                    stream.change_is_muted(true);
-            } else {
-                changed = stream.set_volume(volume);
-                if (stream.is_muted)
-                    stream.change_is_muted(false);
+        this._pushingVolume = true;
+        try {
+            for (const stream of this._streams.values()) {
+                let changed;
+                if (volume < 1) {
+                    changed = stream.set_volume(0);
+                    if (!stream.is_muted)
+                        stream.change_is_muted(true);
+                } else {
+                    changed = stream.set_volume(volume);
+                    if (stream.is_muted)
+                        stream.change_is_muted(false);
+                }
+                if (changed)
+                    stream.push_volume();
             }
-            if (changed)
-                stream.push_volume();
+        } finally {
+            this._pushingVolume = false;
         }
     }
 
@@ -282,10 +302,14 @@ class AppVolumeItem extends PopupMenu.PopupBaseMenuItem {
         }
     }
 
-    destroy() {
+    releaseStreams() {
         for (const stream of this._streams.values())
             stream.disconnectObject(this);
         this._streams.clear();
+    }
+
+    destroy() {
+        this.releaseStreams();
         super.destroy();
     }
 });
@@ -427,14 +451,27 @@ class AppMixer {
         this._output._sync();
     }
 
-    destroy() {
+    /**
+     * @param {object} [params]
+     * @param {boolean} [params.sliderDestroyed] the output slider is already
+     *   gone, so only drop our signal connections and leave its widgets alone
+     */
+    destroy({sliderDestroyed = false} = {}) {
         this._control.disconnectObject(this);
         this._settings.disconnectObject(this);
 
-        for (const item of this._items.values())
-            item.destroy();
+        for (const item of this._items.values()) {
+            if (sliderDestroyed)
+                item.releaseStreams();
+            else
+                item.destroy();
+        }
         this._items.clear();
         this._streamKeys.clear();
+
+        if (sliderDestroyed)
+            return;
+
         this._section.destroy();
         this._separator.destroy();
 
@@ -446,18 +483,22 @@ class AppMixer {
 
 export default class AppVolumeMixerExtension extends Extension {
     enable() {
+        this._mixers = new Map(); // output slider -> AppMixer
+        this._watchedGrids = new Set();
         this._tries = 0;
-        this._attach();
+        this._start();
     }
 
-    _attach() {
-        // Quick Settings builds its indicators asynchronously at startup.
-        const output = Main.panel.statusArea.quickSettings?._volumeOutput?._output;
+    _start() {
+        // Quick Settings builds its indicators asynchronously at startup. We
+        // wait for the top bar's to learn which classes to look for.
+        const quickSettings = Main.panel.statusArea.quickSettings;
+        const output = quickSettings?._volumeOutput?._output;
         if (!output) {
             if (this._tries++ < 40) {
                 this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 250, () => {
                     this._timeoutId = 0;
-                    this._attach();
+                    this._start();
                     return GLib.SOURCE_REMOVE;
                 });
             } else {
@@ -465,7 +506,48 @@ export default class AppVolumeMixerExtension extends Extension {
             }
             return;
         }
-        this._mixer = new AppMixer(output);
+
+        this._quickSettingsClass = quickSettings.constructor;
+        this._outputSliderClass = output.constructor;
+
+        // Every Quick Settings menu is a child of Main.uiGroup: the top bar's,
+        // and the extra copies that Dash to Panel (and similar extensions)
+        // create for panels on other monitors, which can appear at any time.
+        Main.uiGroup.connectObject('child-added',
+            (_group, actor) => this._watchMenu(actor), this);
+        for (const actor of Main.uiGroup.get_children())
+            this._watchMenu(actor);
+    }
+
+    _watchMenu(actor) {
+        const menu = actor._delegate;
+        if (!(menu?.sourceActor instanceof this._quickSettingsClass))
+            return;
+
+        const grid = menu._grid;
+        if (!grid || this._watchedGrids.has(grid))
+            return;
+
+        // A new menu gets its indicators (and its volume slider) a moment
+        // after it is created, so also watch for items added later.
+        this._watchedGrids.add(grid);
+        grid.connectObject(
+            'child-added', (_grid, child) => this._attach(child),
+            'destroy', () => this._watchedGrids.delete(grid),
+            this);
+        for (const child of grid.get_children())
+            this._attach(child);
+    }
+
+    _attach(slider) {
+        if (!(slider instanceof this._outputSliderClass) || this._mixers.has(slider))
+            return;
+
+        this._mixers.set(slider, new AppMixer(slider));
+        slider.connectObject('destroy', () => {
+            this._mixers.get(slider)?.destroy({sliderDestroyed: true});
+            this._mixers.delete(slider);
+        }, this);
     }
 
     disable() {
@@ -473,7 +555,19 @@ export default class AppVolumeMixerExtension extends Extension {
             GLib.source_remove(this._timeoutId);
             this._timeoutId = 0;
         }
-        this._mixer?.destroy();
-        this._mixer = null;
+
+        Main.uiGroup.disconnectObject(this);
+        for (const grid of this._watchedGrids)
+            grid.disconnectObject(this);
+        this._watchedGrids.clear();
+
+        for (const [slider, mixer] of this._mixers) {
+            slider.disconnectObject(this);
+            mixer.destroy();
+        }
+        this._mixers.clear();
+
+        this._quickSettingsClass = null;
+        this._outputSliderClass = null;
     }
 }

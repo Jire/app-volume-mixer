@@ -24,6 +24,7 @@
 - **One-click mute**: click an app's icon to mute it. Click again to unmute.
 - **Grouped streams**: apps with several streams (browser tabs, games) get one row.
 - **Stays in sync**: changes made in the app itself, pavucontrol or GNOME Settings show up right away.
+- **Every monitor**: also works in the Quick Settings menus that Dash to Panel adds to your other monitors.
 - **Native look**: it lives in GNOME's own sound menu, next to your output devices, and respects the "Over-Amplification" setting.
 
 Works with PipeWire and PulseAudio on **GNOME 46 to 51**.
